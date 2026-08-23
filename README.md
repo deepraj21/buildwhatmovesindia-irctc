@@ -7,7 +7,7 @@ npm install
 npm start
 ```
 
-The server runs on `http://localhost:3001`; see [the product and API plan](docs/product-and-api-plan.md) for the flow, endpoint contract, and sample analysis request.
+The server runs on `http://localhost:3001`; see [the product and API plan](docs/product-and-api-plan.md) for the user flow and [the API reference](server/API_DOC.md) for the client integration contract.
 
 ```sh
 npm test

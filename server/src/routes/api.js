@@ -35,6 +35,11 @@ router.put("/bookings/:bookingId/seats", (req, res) => {
   const selections = req.body.selections;
   if (!booking) return res.status(404).json({ error: "Booking not found." });
   if (!Array.isArray(selections) || selections.length !== booking.itinerary.legs.length) return res.status(422).json({ error: "Select one class for every journey leg." });
+  const invalidSelection = selections.some((selection, index) => {
+    const leg = booking.itinerary.legs[index];
+    return !selection?.trainId || !selection.classCode || selection.trainId !== leg.trainId || !leg.classes.some((travelClass) => travelClass.code === selection.classCode);
+  });
+  if (invalidSelection) return res.status(422).json({ error: "Each selection must match its journey leg and an available class." });
   booking.seatSelections = selections.map((selection) => ({ ...selection, holdId: randomHold(), heldUntil: new Date(Date.now() + 8 * 60_000).toISOString() }));
   booking.status = "SEATS_HELD";
   res.json({ data: booking });
