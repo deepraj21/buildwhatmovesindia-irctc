@@ -1,0 +1,17 @@
+{
+  "language": "English",
+  "bookTicket": "टिकट बुक करें",
+  "pnrStatus": "पीएनआर स्थिति",
+  "chartsVacancy": "चार्ट / उपलब्धता",
+  "from": "कहाँ से",
+  "to": "कहाँ तक",
+  "journeyDate": "यात्रा की तारीख",
+  "class": "श्रेणी",
+  "quota": "कोटा",
+  "searchTrains": "ट्रेन खोजें",
+  "search": "खोजें",
+  "indianRailways": "भारतीय रेल",
+  "safety": "सुरक्षा",
+  "security": "संरक्षा",
+  "punctuality": "समयपालन"
+}
