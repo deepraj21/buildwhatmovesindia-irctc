@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import {
   ArrowLeftRight,
@@ -21,8 +21,9 @@ import {
 import "./HomePage.css";
 import english from "../locales/english.json";
 import hindi from "../locales/hindi.json";
+import { getStations, type Station as StationRecord } from "../lib/api";
 type Tab = "book" | "pnr" | "charts";
-const stations = [
+const fallbackStations = [
   "New Delhi",
   "Mumbai Central",
   "Howrah Junction",
@@ -165,12 +166,37 @@ function Station({
   onChange: (s: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const fieldRef = useRef<HTMLLabelElement>(null);
+  const [remoteStations, setRemoteStations] = useState<StationRecord[]>([]);
+  useEffect(() => {
+    if (!open) return;
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (!fieldRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    return () => document.removeEventListener("pointerdown", closeOnOutsidePointer);
+  }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    let active = true;
+    getStations(value)
+      .then((items) => {
+        if (active) setRemoteStations(items);
+      })
+      .catch(() => {
+        if (active) setRemoteStations([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [open, value]);
   const matches = useMemo(
-    () => stations.filter((s) => s.toLowerCase().includes(value.toLowerCase())),
-    [value]
+    () => (remoteStations.length ? remoteStations.map((station) => station.name) : fallbackStations)
+      .filter((station) => station.toLowerCase().includes(value.toLowerCase())),
+    [remoteStations, value]
   );
   return (
-    <label className="station">
+    <label ref={fieldRef} className="station">
       <span>
         <MapPin size={17} />
         {label}
@@ -497,7 +523,6 @@ export default function HomePage() {
               <button key={name as string}>
                 <C />
                 <b>{name as string}</b>
-                <ChevronDown size={13} />
               </button>
             );
           })}

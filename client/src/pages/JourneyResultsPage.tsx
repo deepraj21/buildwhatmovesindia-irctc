@@ -7,10 +7,10 @@ import {
   Clock3,
   IndianRupee,
   MapPin,
-  ShieldCheck,
   TrainFront,
 } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
+import { analyseJourney, type JourneyAnalysis } from "../lib/api";
 import "./JourneyResultsPage.css";
 
 type TravelClass = { code: string; name: string; fare: number; available: number };
@@ -35,13 +35,6 @@ type Option = {
   reliability: { connectionRiskMinutes: number; rating: string };
   summary: string;
 };
-type Analysis = {
-  search: { from: string; to: string; date: string };
-  insight: string;
-  options: Option[];
-};
-
-const api = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/v1";
 const stationNames: Record<string, string> = {
   HWH: "Howrah Junction",
   SBC: "KSR Bengaluru",
@@ -140,23 +133,14 @@ function JourneyCard({ option }: { option: Option }) {
 
 export default function JourneyResultsPage() {
   const [params] = useSearchParams();
-  const [data, setData] = useState<Analysis | null>(null);
+  const [data, setData] = useState<JourneyAnalysis | null>(null);
   const [error, setError] = useState("");
   const from = params.get("from") || "HWH",
     to = params.get("to") || "MYS",
     date = params.get("date") || "2026-08-25";
   useEffect(() => {
-    fetch(`${api}/journeys/analyse`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ from, to, date, passengers: 1, sortBy: "balanced" }),
-    })
-      .then(async (response) => {
-        const body = await response.json();
-        if (!response.ok)
-          throw new Error(body.error || "Unable to analyse this journey.");
-        setData(body);
-      })
+    analyseJourney({ from, to, date, passengers: 1, sortBy: "balanced" })
+      .then(setData)
       .catch((e) => setError(e.message));
   }, [from, to, date]);
   return (
@@ -167,12 +151,11 @@ export default function JourneyResultsPage() {
           Modify search
         </Link>
         <div>
-          <span>JOURNEY PLANNER</span>
           <h1>
             {stationNames[from] || from} <ArrowRight size={20} />{" "}
             {stationNames[to] || to}
           </h1>
-          <p>
+          <p className="journey-date">
             <CalendarDays size={14} />
             {new Intl.DateTimeFormat("en-IN", { dateStyle: "full" }).format(
               new Date(`${date}T12:00:00`)
@@ -210,7 +193,7 @@ export default function JourneyResultsPage() {
             ))}
           </fieldset>
           <div className="filter-note">
-            <ShieldCheck size={19} />
+            {/* <ShieldCheck size={19} /> */}
             Connection options include station-change and delay-aware buffer checks.
           </div>
         </aside>

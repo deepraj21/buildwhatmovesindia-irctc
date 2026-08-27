@@ -362,7 +362,7 @@ header {
 }
 
 .primary:hover {
-  transform: translateY(-1px);
+  /* transform: translateY(-1px); */
   filter: brightness(0.94);
 }
 
@@ -449,7 +449,7 @@ header {
 }
 
 .services-grid button:hover {
-  transform: translateY(-4px);
+  /* transform: translateY(-4px); */
   box-shadow: 0 13px 23px #284c6920;
 }
 
@@ -490,7 +490,7 @@ header {
 }
 
 .holiday-grid article:hover {
-  transform: translateY(-5px);
+  /* transform: translateY(-5px); */
   box-shadow: 0 16px 34px #213c5120;
 }
 
@@ -595,7 +595,7 @@ header {
 }
 
 .social a:hover {
-  transform: translateY(-2px);
+  /* transform: translateY(-2px); */
   background: #fff;
   color: #0b497c;
 }

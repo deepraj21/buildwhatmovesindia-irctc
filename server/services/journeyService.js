@@ -1,9 +1,15 @@
 const Train = require("../models/Train");
 const Station = require("../models/Station");
+const mongoose = require("mongoose");
+const { stations, trains: fallbackTrains } = require("../data/trains");
 const { atJourneyTime, iso } = require("../lib/time");
 
 const normalizeStation = async (code) => {
   const input = String(code || "").trim().toUpperCase();
+  if (mongoose.connection.readyState !== 1) {
+    const station = stations.find((item) => item.code === input || item.aliases?.includes(input));
+    return station?.code;
+  }
   const station = await Station.findOne({ $or: [{ code: input }, { aliases: input }] }).lean();
   return station?.code;
 };
@@ -39,7 +45,9 @@ async function analyseJourney({ from, to, date, passengers = 1, sortBy = "balanc
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date || "")) throw Object.assign(new Error("date must use YYYY-MM-DD."), { status: 422 });
   if (!Number.isInteger(passengers) || passengers < 1 || passengers > 6) throw Object.assign(new Error("passengers must be an integer from 1 to 6."), { status: 422 });
 
-  const trains = await Train.find({ $or: [{ from: origin }, { to: destination }] }).lean();
+  const trains = mongoose.connection.readyState === 1
+    ? await Train.find({ $or: [{ from: origin }, { to: destination }] }).lean()
+    : fallbackTrains.filter((train) => train.from === origin || train.to === destination);
   const direct = trains.filter((train) => train.from === origin && train.to === destination)
     .map((train) => option({ id: `direct-${train.id}`, kind: "direct", legs: [buildLeg(train, date)] }));
   const connecting = [];

@@ -24,4 +24,4 @@ npm test
 
 Deploy `client/` and `server/` as separate Vercel projects. The client project uses the `client/vercel.json` SPA fallback; the server project uses the `server/vercel.json` Express function route.
 
-Set `VITE_API_BASE_URL` in the client project to the deployed API URL ending in `/api/v1`. Set `MONGODB_URI` in the server project to a MongoDB Atlas connection string. `PORT` is managed by Vercel and is not required there.
+Set `VITE_SERVER_URL` in the client project to the deployed API origin, such as `https://your-api.vercel.app`. The client app appends `/api/v1`. Set `MONGODB_URI` in the server project to a MongoDB Atlas connection string. `PORT` is managed by Vercel and is not required there.

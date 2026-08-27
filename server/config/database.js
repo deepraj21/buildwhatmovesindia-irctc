@@ -2,7 +2,7 @@ const path = require("node:path");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 const mongoURI = process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://127.0.0.1:27017/railway_journey_planner";
 
