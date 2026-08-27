@@ -4,6 +4,65 @@ const mongoose = require("mongoose");
 const { stations, trains: fallbackTrains } = require("../data/trains");
 const { atJourneyTime, iso } = require("../lib/time");
 
+const SLEEPER_BERTHS = {
+  top: [
+    { berth: "Lower", code: "L" },
+    { berth: "Middle", code: "M" },
+    { berth: "Upper", code: "U" },
+  ],
+  bottom: [
+    { berth: "Side Lower", code: "SL" },
+    { berth: "Middle", code: "M" },
+    { berth: "Side Upper", code: "SU" },
+  ],
+};
+
+const CHAIR_BERTHS = {
+  top: [
+    { berth: "Window", code: "W" },
+    { berth: "Aisle", code: "A" },
+    { berth: "Middle", code: "M" },
+  ],
+  bottom: [
+    { berth: "Window", code: "W" },
+    { berth: "Aisle", code: "A" },
+    { berth: "Middle", code: "M" },
+  ],
+};
+
+function seatOptions(travelClass) {
+  const isChair = ["CC", "EC", "2S"].includes(travelClass.code);
+  const berthLayout = isChair ? CHAIR_BERTHS : SLEEPER_BERTHS;
+  const capacityByClass = { "1A": 24, "2A": 54, "3A": 72, SL: 80, CC: 102, EC: 56, "2S": 108 };
+  const capacity = Math.max(travelClass.available, capacityByClass[travelClass.code] || travelClass.available);
+  const codeSeed = [...travelClass.code].reduce((total, character) => total + character.charCodeAt(0), 0);
+  const availableSeats = new Set(
+    Array.from({ length: capacity }, (_value, index) => index)
+      .sort((left, right) => ((left * 37 + codeSeed) % capacity) - ((right * 37 + codeSeed) % capacity))
+      .slice(0, travelClass.available),
+  );
+
+  return Array.from({ length: capacity }, (_value, index) => {
+    const bay = Math.floor(index / 6);
+    const positionInBay = index % 6;
+    const row = positionInBay < 3 ? "top" : "bottom";
+    const column = positionInBay % 3;
+    const berthInfo = berthLayout[row][column];
+
+    return {
+      number: String(index + 1),
+      berth: berthInfo.berth,
+      berthCode: berthInfo.code,
+      available: availableSeats.has(index),
+      layout: { bay, row, column },
+    };
+  });
+}
+
+function classesWithSeats(classes) {
+  return classes.map((travelClass) => ({ ...travelClass, seats: seatOptions(travelClass) }));
+}
+
 const normalizeStation = async (code) => {
   const input = String(code || "").trim().toUpperCase();
   if (mongoose.connection.readyState !== 1) {
@@ -20,7 +79,7 @@ function buildLeg(train, date, departureDayOffset = 0) {
   return {
     trainId: train.id, trainName: train.name, from: train.from, to: train.to,
     departure: iso(departure), arrival: iso(arrival), durationMinutes: train.durationMinutes,
-    punctuality: train.punctuality, classes: train.classes
+    punctuality: train.punctuality, classes: classesWithSeats(train.classes)
   };
 }
 

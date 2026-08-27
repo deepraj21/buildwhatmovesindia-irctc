@@ -9,11 +9,11 @@ import {
   MapPin,
   TrainFront,
 } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
-import { analyseJourney, type JourneyAnalysis } from "../lib/api";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { analyseJourney, createBooking, type JourneyAnalysis, type ItineraryOption } from "../lib/api";
 import "./JourneyResultsPage.css";
 
-type TravelClass = { code: string; name: string; fare: number; available: number };
+type TravelClass = { code: string; name: string; fare: number; available: number; seats?: { number: string; berth: string }[] };
 type Leg = {
   trainId: string;
   trainName: string;
@@ -52,7 +52,23 @@ const formatTime = (value: string) =>
   }).format(new Date(value));
 const duration = (minutes: number) => `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
 
-function JourneyCard({ option }: { option: Option }) {
+function JourneyCard({ option, search }: { option: Option; search: JourneyAnalysis["search"] }) {
+  const navigate = useNavigate();
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState("");
+
+  async function selectJourney() {
+    setIsCreating(true);
+    setError("");
+    try {
+      const booking = await createBooking(search, option as ItineraryOption);
+      navigate(`/booking/${booking.id}/passengers`);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Could not start this booking.");
+      setIsCreating(false);
+    }
+  }
+
   return (
     <article className="journey-card">
       <div className="journey-card-top">
@@ -123,10 +139,11 @@ function JourneyCard({ option }: { option: Option }) {
           <IndianRupee size={16} />
           From <b>{option.fareFrom.toLocaleString("en-IN")}</b>
         </span>
-        <Link to={`/booking/${option.id}`}>
-          Select journey <ArrowRight size={16} />
-        </Link>
+        <button type="button" onClick={selectJourney} disabled={isCreating}>
+          {isCreating ? "Opening booking…" : "Select journey"} <ArrowRight size={16} />
+        </button>
       </div>
+      {error && <p className="journey-error">{error}</p>}
     </article>
   );
 }
@@ -197,7 +214,7 @@ export default function JourneyResultsPage() {
             Connection options include station-change and delay-aware buffer checks.
           </div>
         </aside>
-        <section className="journeys">
+        <div className="journeys-panel">
           <p className="insight">
             {data?.insight ||
               (error
@@ -209,10 +226,12 @@ export default function JourneyResultsPage() {
               Return to search
             </Link>
           )}
-          {data?.options.map((option) => (
-            <JourneyCard key={option.id} option={option} />
-          ))}
-        </section>
+          <div className="journeys-list no-scrollbar">
+            {data?.options.map((option) => (
+              <JourneyCard key={option.id} option={option} search={data.search} />
+            ))}
+          </div>
+        </div>
       </section>
     </main>
   );

@@ -128,7 +128,7 @@ header {
   position: relative;
   background:
     linear-gradient(90deg, #061a2dd8, #061a2d17 60%, #061a2d45),
-    url("../assets/Hero.png") center/cover;
+    url("https://i.ibb.co/TNHGJGX/Hero.png") center/cover;
 }
 
 .hero-text {

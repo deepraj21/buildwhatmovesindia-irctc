@@ -1,10 +1,21 @@
 /* Journey results page styles */
+html:has(.results-page),
+html:has(.results-page) body,
+html:has(.results-page) #root {
+  height: 100%;
+  overflow: hidden;
+}
 .results-page {
-  min-height: 100vh;
+  height: 100%;
+  min-height: 0;
   background: #f4f7f9;
   color: #172130;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 .results-header {
+  flex-shrink: 0;
   background: #123e73;
   color: #fff;
   padding: 28px max(24px, calc((100vw - 72rem) / 2));
@@ -47,14 +58,20 @@
   white-space: nowrap;
 }
 .results-layout {
+  width: min(72rem, calc(100vw - 48px));
   max-width: 72rem;
   margin: 28px auto;
-  display: grid;
-  grid-template-columns: 230px 1fr;
+  padding-bottom: 28px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
   gap: 20px;
+  overflow: hidden;
 }
 .filters {
-  align-self: start;
+  width: 230px;
+  flex-shrink: 0;
+  align-self: flex-start;
   background: #fff;
   border: 1px solid #dce5eb;
   border-radius: 10px;
@@ -114,12 +131,29 @@
   display: flex;
   gap: 7px;
 }
-.journeys {
-  display: grid;
+.journeys-panel {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   gap: 13px;
-  align-content: start;
+  overflow: hidden;
+}
+.journeys-list {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
 }
 .insight {
+  flex-shrink: 0;
   margin: 0;
   padding: 13px 15px;
   border-radius: 8px;
@@ -128,6 +162,7 @@
   font-size: 0.8rem;
 }
 .journey-card {
+  flex-shrink: 0;
   background: #fff;
   border: 1px solid #d8e2e9;
   border-radius: 11px;
@@ -288,6 +323,7 @@
   color: #172f44;
 }
 .journey-action a,
+.journey-action button,
 .retry {
   display: flex;
   align-items: center;
@@ -299,7 +335,26 @@
   font-size: 0.75rem;
   font-weight: 800;
 }
+.journey-action button {
+  border: 0;
+  cursor: pointer;
+}
+.journey-action button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
 @media (max-width: 760px) {
+  html:has(.results-page),
+  html:has(.results-page) body,
+  html:has(.results-page) #root {
+    height: auto;
+    overflow: visible;
+  }
+  .results-page {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
   .results-header {
     padding: 20px;
     align-items: flex-start;
@@ -312,11 +367,21 @@
     gap: 14px;
   }
   .results-layout {
+    width: auto;
     margin: 17px;
-    grid-template-columns: 1fr;
+    flex: initial;
+    flex-direction: column;
+    overflow: visible;
   }
   .filters {
     display: none;
+  }
+  .journeys-panel {
+    overflow: visible;
+  }
+  .journeys-list {
+    overflow: visible;
+    padding-right: 0;
   }
   .journey-card-top {
     align-items: flex-start;

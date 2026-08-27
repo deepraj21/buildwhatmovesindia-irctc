@@ -23,7 +23,7 @@ Update this document in the same change whenever an endpoint, HTTP method, reque
 | `POST` | `/bookings` | Creates a draft booking from the itinerary chosen on the results screen. | `201` |
 | `GET` | `/bookings/:bookingId` | Retrieves the current state of a booking. | `200` |
 | `PUT` | `/bookings/:bookingId/passengers` | Saves shared passenger details for all itinerary legs. | `200` |
-| `PUT` | `/bookings/:bookingId/seats` | Saves one class/seat selection for each leg and creates seat holds. | `200` |
+| `PUT` | `/bookings/:bookingId/seats` | Saves one class/berth selection for each leg and creates seat holds. | `200` |
 | `POST` | `/bookings/:bookingId/payment` | Pays for and confirms the complete booking. | `200` |
 
 ## `GET /health`
@@ -121,6 +121,15 @@ Analyses a requested journey and returns ranked direct and delay-aware connectin
 | `name` | string | Display name of the class. |
 | `fare` | number | Per-passenger fare. |
 | `available` | integer | Available seats. |
+| `seats[]` | object[] | Generated seat/berth options for this class. |
+| `seats[].number` | string | Seat or berth number accepted by the seat-hold endpoint. |
+| `seats[].berth` | string | Berth type, or `Window`, `Aisle`, or `Middle` for chair classes. |
+| `seats[].berthCode` | string | Short berth code: `L`, `M`, `U`, `SL`, `SU`, or chair codes `W`, `A`, `M`. |
+| `seats[].layout` | object | Coach position for rendering the horizontal seat map. |
+| `seats[].layout.bay` | integer | Zero-based bay index along the coach. |
+| `seats[].layout.row` | string | `top` or `bottom` relative to the horizontal aisle. |
+| `seats[].layout.column` | integer | Seat position within the row, from `0` to `2`. |
+| `seats[].available` | boolean | Whether the seat can currently be selected. |
 
 ## `POST /bookings`
 
@@ -194,14 +203,16 @@ Stores one class selection for every itinerary leg and creates time-limited hold
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `selections` | `SeatSelection[]` | **Yes** | Must have exactly one selection per itinerary leg. |
+| `selections` | `SeatSelection[]` | **Yes** | Must have exactly one class and berth selection per itinerary leg. |
 | `selections[].trainId` | string | **Yes** | Train ID from the corresponding journey leg. |
 | `selections[].classCode` | string | **Yes** | Selected class code from the corresponding journey leg. |
+| `selections[].seatNumber` | string | **Yes** | First selected seat. Also accepted as the only seat for a single traveller. |
+| `selections[].seatNumbers` | string[] | No | One available seat per passenger. Required when more than one traveller is booked. |
 
 ```json
 {
   "selections": [
-    { "trainId": "22863", "classCode": "3A" }
+    { "trainId": "22863", "classCode": "3A", "seatNumber": "12" }
   ]
 }
 ```
@@ -214,7 +225,7 @@ Stores one class selection for every itinerary leg and creates time-limited hold
 | `data.seatSelections[].holdId` | string | Seat-hold identifier. |
 | `data.seatSelections[].heldUntil` | ISO-8601 datetime | Hold expiry timestamp. |
 
-Returns `404` for an unknown booking and `422` unless the selection count matches the number of itinerary legs and each selection matches its train and an available class.
+Returns `404` for an unknown booking and `422` unless the selection count matches the number of itinerary legs and each selection matches its train and an available class. Returns `409` if passenger details have not been saved yet.
 
 ## `POST /bookings/:bookingId/payment`
 

@@ -45,16 +45,24 @@ async function findBooking(id) {
 
   if (connection) {
     try {
-      const record = await Booking.findOne({ id }).lean();
-      if (record) return Object.assign(record, { save: async function save() { return this; } });
+      const record = await Booking.findOne({ id });
+      if (record) return record;
     } catch (error) {
       console.warn("Mongo booking lookup failed; using in-memory fallback.", error.message);
     }
   }
 
-  const memoryBooking = bookings.get(id);
-  if (memoryBooking) return memoryBooking;
-  return null;
+  return bookings.get(id) || null;
 }
 
-module.exports = { createBooking, findBooking };
+function toClient(booking) {
+  if (!booking) return booking;
+  const data = typeof booking.toJSON === "function" ? booking.toJSON() : { ...booking };
+  delete data.save;
+  delete data._id;
+  data.passengers = Array.isArray(data.passengers) ? data.passengers : [];
+  data.seatSelections = Array.isArray(data.seatSelections) ? data.seatSelections : [];
+  return data;
+}
+
+module.exports = { createBooking, findBooking, toClient };

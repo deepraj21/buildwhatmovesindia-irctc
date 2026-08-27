@@ -38,7 +38,7 @@ test("a booking confirms after travellers and seats are saved", databaseTest, as
     const created = await (await fetch(`${baseUrl}/bookings`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ search: analysis.search, itinerary }) })).json();
     const id = created.data.id;
     await fetch(`${baseUrl}/bookings/${id}/passengers`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ passengers: [{ name: "Asha Sen", age: 31, gender: "FEMALE" }] }) });
-    await fetch(`${baseUrl}/bookings/${id}/seats`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ selections: itinerary.legs.map((leg) => ({ trainId: leg.trainId, classCode: leg.classes[0].code })) }) });
+    await fetch(`${baseUrl}/bookings/${id}/seats`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ selections: itinerary.legs.map((leg) => ({ trainId: leg.trainId, classCode: leg.classes[0].code, seatNumber: leg.classes[0].seats.find((seat) => seat.available).number })) }) });
     const confirmation = await (await fetch(`${baseUrl}/bookings/${id}/payment`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ method: "UPI" }) })).json();
     assert.equal(confirmation.data.status, "CONFIRMED");
     assert.match(confirmation.data.pnr, /^\d{10}$/);

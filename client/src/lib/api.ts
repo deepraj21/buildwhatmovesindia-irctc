@@ -20,7 +20,14 @@ export type JourneySearch = {
   sortBy?: "balanced" | "fastest" | "cheapest";
 };
 
-export type TravelClass = { code: string; name: string; fare: number; available: number };
+export type TravelSeat = {
+  number: string;
+  berth: string;
+  berthCode?: string;
+  available: boolean;
+  layout?: { bay: number; row: "top" | "bottom"; column: number };
+};
+export type TravelClass = { code: string; name: string; fare: number; available: number; seats?: TravelSeat[] };
 export type JourneyLeg = {
   trainId: string;
   trainName: string;
@@ -57,6 +64,8 @@ export type Passenger = {
 export type SeatSelection = {
   trainId: string;
   classCode: string;
+  seatNumber: string;
+  seatNumbers?: string[];
   holdId?: string;
   heldUntil?: string;
 };
