@@ -18,9 +18,9 @@ import {
   UtensilsCrossed,
   X,
 } from "lucide-react";
-import "./App.css";
-import english from "./locales/english.json";
-import hindi from "./locales/hindi.json";
+import "./HomePage.css";
+import english from "../locales/english.json";
+import hindi from "../locales/hindi.json";
 type Tab = "book" | "pnr" | "charts";
 const stations = [
   "New Delhi",
@@ -114,23 +114,16 @@ function installUtilityControls() {
     ];
     const from = useHindi ? english : hindi;
     const to = dictionary;
-    const walker = document.createTreeWalker(
-      document.body,
-      NodeFilter.SHOW_TEXT
-    );
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     let node: Text | null;
     while ((node = walker.nextNode() as Text | null)) {
-      const key = labels.find(
-        (label) => node?.nodeValue?.trim() === from[label]
-      );
+      const key = labels.find((label) => node?.nodeValue?.trim() === from[label]);
       if (key && node.nodeValue)
         node.nodeValue = node.nodeValue.replace(from[key], to[key]);
     }
   };
   controls.addEventListener("click", (event) => {
-    const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
-      "button"
-    );
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button");
     if (!button) return;
     if (button.dataset.language !== undefined) {
       useHindi = !useHindi;
@@ -141,8 +134,8 @@ function installUtilityControls() {
       button.dataset.zoom === "+"
         ? Math.min(125, zoom + 10)
         : button.dataset.zoom === "-"
-        ? Math.max(80, zoom - 10)
-        : 100;
+          ? Math.max(80, zoom - 10)
+          : 100;
     document.documentElement.style.fontSize = `${zoom}%`;
   });
   navigation.querySelectorAll<HTMLAnchorElement>("a").forEach((link) => {
@@ -235,10 +228,7 @@ function Booking() {
           <Ticket size={17} />
           BOOK TICKET
         </button>
-        <button
-          className={tab === "pnr" ? "active" : ""}
-          onClick={() => reset("pnr")}
-        >
+        <button className={tab === "pnr" ? "active" : ""} onClick={() => reset("pnr")}>
           PNR STATUS
         </button>
         <button
@@ -317,9 +307,7 @@ function Booking() {
           {result === "trains" && (
             <div className="result">
               <b>3 trains found</b>
-              <span>
-                12952 Mumbai Rajdhani · 16:35 — 08:35 · AC 3 Tier available
-              </span>
+              <span>12952 Mumbai Rajdhani · 16:35 — 08:35 · AC 3 Tier available</span>
             </div>
           )}
         </form>
@@ -433,7 +421,7 @@ const holidays = [
     "rail",
   ],
 ];
-function App() {
+export default function HomePage() {
   const [menu, setMenu] = useState(false),
     [chat, setChat] = useState(false);
   window.setTimeout(installUtilityControls, 0);
@@ -537,13 +525,11 @@ function App() {
       <section className="social">
         <p>Get Connected with us on social networks</p>
         <div>
-          {[MessageCircle, Send, CircleHelp, Ticket, MapPin, TrainFront].map(
-            (I, i) => (
-              <a href="#top" key={i}>
-                <I />
-              </a>
-            )
-          )}
+          {[MessageCircle, Send, CircleHelp, Ticket, MapPin, TrainFront].map((I, i) => (
+            <a href="#top" key={i}>
+              <I />
+            </a>
+          ))}
         </div>
       </section>
       <footer>
@@ -608,9 +594,8 @@ function App() {
             <b>CRIS</b>
           </div>
           <p>
-            Copyright © 2026 -{" "}
-            <a href="http://www.irctc.co.in">www.irctc.co.in</a>. All Rights
-            Reserved · Designed and Hosted by CRIS · Compatible Browsers
+            Copyright © 2026 - <a href="http://www.irctc.co.in">www.irctc.co.in</a>. All
+            Rights Reserved · Designed and Hosted by CRIS · Compatible Browsers
           </p>
         </div>
       </footer>
@@ -639,4 +624,3 @@ function App() {
     </main>
   );
 }
-export default App;

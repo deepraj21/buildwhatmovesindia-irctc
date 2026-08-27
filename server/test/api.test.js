@@ -1,6 +1,17 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+require("dotenv").config();
 const app = require("../src/index");
+const { connectDatabase } = require("../src/config/database");
+const mongoose = require("mongoose");
+const databaseTest = { skip: !process.env.MONGO_URI ? "MONGO_URI is required for database-backed API tests." : false };
+
+test.before(async () => {
+  if (process.env.MONGO_URI) await connectDatabase();
+});
+test.after(async () => {
+  if (mongoose.connection.readyState) await mongoose.disconnect();
+});
 
 async function withServer(run) {
   const server = app.listen(0);
@@ -9,7 +20,7 @@ async function withServer(run) {
   finally { await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve())); }
 }
 
-test("analysis finds both direct and delay-aware HWH to MYS choices", async () => {
+test("analysis finds both direct and delay-aware HWH to MYS choices", databaseTest, async () => {
   await withServer(async (baseUrl) => {
     const response = await fetch(`${baseUrl}/journeys/analyse`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ from: "HWH", to: "MYS", date: "2026-09-15", passengers: 2 }) });
     const body = await response.json();
@@ -20,7 +31,7 @@ test("analysis finds both direct and delay-aware HWH to MYS choices", async () =
   });
 });
 
-test("a booking confirms after travellers and seats are saved", async () => {
+test("a booking confirms after travellers and seats are saved", databaseTest, async () => {
   await withServer(async (baseUrl) => {
     const analysis = await (await fetch(`${baseUrl}/journeys/analyse`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ from: "HWH", to: "MYS", date: "2026-09-15" }) })).json();
     const itinerary = analysis.options[0];

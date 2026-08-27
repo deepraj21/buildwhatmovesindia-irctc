@@ -5,6 +5,10 @@ Content type: `application/json`
 
 All successful responses use JSON. Fields marked **required** must be provided. Error responses have the shape `{ "error": "Human-readable message" }`.
 
+## Database setup
+
+The API uses MongoDB for stations, trains, and bookings. Copy `.env.example` to `.env`, set `MONGO_URI`, then run `npm run seed` once to load the included dummy railway data. The seed command is idempotent, so it can be rerun after data changes.
+
 ## API maintenance rule
 
 Update this document in the same change whenever an endpoint, HTTP method, request field, response field, validation rule, or status code changes. Client applications should treat this file as the API contract.
