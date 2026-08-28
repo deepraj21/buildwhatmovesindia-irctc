@@ -1,27 +1,34 @@
-# Railway Journey Planner API
+# Rail Journey Planner
 
-Express API for a multi-page rail booking flow with direct-train and delay-aware multi-hop analysis.
+## The Problem
 
-### Local API
+Many people in India book journeys that require connecting trains. Finding the best combination can take a significant amount of time: travellers must search multiple routes, compare fares and schedules, estimate transfer time, and research how reliable each train is. This makes planning a connecting journey difficult and increases the risk of choosing a connection that is too tight or inconvenient.
 
-```sh
-cd server
-npm install
-cp .env.example .env
-# Set MONGODB_URI to your local MongoDB or MongoDB Atlas connection string.
-npm run seed
-npm start
-```
+## The Solution
 
-The server runs on `http://localhost:3000` by default. `npm run seed` is safe to run again; it updates the dummy stations and trains instead of duplicating them. See [the product and API plan](docs/product-and-api-plan.md) for the user flow and [the API reference](server/API_DOC.md) for the client integration contract.
+Rail Journey Planner brings direct and connecting journey options together in one search. Search results first show available direct trains and also surface viable one-hop alternatives, so travellers can compare the full journey instead of researching each leg separately.
 
-```sh
-cd server
-npm test
-```
+The planner uses historical delay data and deterministic calculations to evaluate connections. A connection is accepted only when there is enough time for a platform change and the incoming train's 90th-percentile historical delay. The result clearly shows the available buffer and reliability risk without presenting the connection as guaranteed.
 
-### Vercel deployment
+Travellers can compare options by:
 
-Deploy `client/` and `server/` as separate Vercel projects. The client project uses the `client/vercel.json` SPA fallback; the server project uses the `server/vercel.json` Express function route.
+- **Balanced:** duration, starting fare, and connection risk
+- **Fastest:** total journey time
+- **Cheapest:** lowest available class fare across all legs
 
-Set `VITE_SERVER_URL` in the client project to the deployed API origin, such as `https://your-api.vercel.app`. The client app appends `/api/v1`. Set `MONGODB_URI` in the server project to a MongoDB Atlas connection string. `PORT` is managed by Vercel and is not required there.
+## One Booking For The Whole Journey
+
+When a traveller chooses a connecting itinerary, both train legs are carried forward into a single booking. Seats, class selections, berth preferences, passenger details, pricing, and payment are managed together under one booking ID. This avoids repeating the booking process for each train and gives travellers one place to review the complete journey.
+
+The guided flow is:
+
+1. Search stations, date, passengers, and ranking preference
+2. Compare direct and delay-aware connecting itineraries
+3. Select classes and berth preferences for each leg
+4. Add traveller and contact details once
+5. Review the full itinerary and make one payment
+6. Receive confirmation with the PNR, tickets, journey timeline, and connection guidance
+
+The initial catalogue supports journeys such as `HWH → MYS`, including a direct service and a `HWH → SBC → MYS` alternative. `BLR` is supported as an alias for `SBC`.
+
+For the product direction and API contract, see [the product and API plan](docs/product-and-api-plan.md).
